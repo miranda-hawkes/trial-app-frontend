@@ -1,4 +1,4 @@
-package uk.gov.hmrc.trialappfrontend
+package config
 
 import java.io.File
 
@@ -31,7 +31,7 @@ object FrontendGlobal
   }
 
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit rh: Request[_]): Html =
-    uk.gov.hmrc.trialappfrontend.views.html.error_template(pageTitle, heading, message)
+    views.html.error_template(pageTitle, heading, message)
 
   override def microserviceMetricsConfig(implicit app: Application): Option[Configuration] = app.configuration.getConfig(s"microservice.metrics")
 }

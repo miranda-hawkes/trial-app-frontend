@@ -1,4 +1,4 @@
-package uk.gov.hmrc.trialappfrontend
+package config
 
 import play.api.Play.{configuration, current}
 import uk.gov.hmrc.play.config.ServicesConfig
@@ -10,7 +10,7 @@ trait AppConfig {
   val reportAProblemNonJSUrl: String
 }
 
-object FrontendAppConfig extends AppConfig with ServicesConfig {
+object ApplicationConfig extends AppConfig with ServicesConfig {
 
   private def loadConfig(key: String) = configuration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
 
