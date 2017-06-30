@@ -1,7 +1,7 @@
 import sbt.Keys._
 import sbt.Tests.{Group, SubProcess}
 import sbt._
-import play.routes.compiler.{InjectedRoutesGenerator, StaticRoutesGenerator}
+import play.routes.compiler.InjectedRoutesGenerator
 import scoverage.ScoverageKeys
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 
