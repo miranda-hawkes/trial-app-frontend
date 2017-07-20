@@ -1,5 +1,7 @@
-@(appConfig: config.AppConfig)(implicit request: Request[_], messages: Messages))
+@(appConfig: config.AppConfig, partial: Html)(implicit request: Request[_], messages: Messages))
 
 @views.html.main_template(title = "Hello from trial-app-frontend", bodyClasses = None, appConfig = appConfig) {
     <h1>Hello from trial-app-frontend !</h1>
+
+    @partial
 }
