@@ -9,6 +9,8 @@ trait AppConfig extends ServicesConfig {
   val analyticsHost: String
   val reportAProblemPartialUrl: String
   val reportAProblemNonJSUrl: String
+  val nationalInsuranceUrl: String
+  val paymentsUrl: String
 }
 
 @Singleton
@@ -23,4 +25,7 @@ class ApplicationConfig @Inject()(configuration: Configuration, val app: Applica
   override lazy val analyticsHost: String = loadConfig(s"google-analytics.host")
   override lazy val reportAProblemPartialUrl: String = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
   override lazy val reportAProblemNonJSUrl: String = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
+
+  override val nationalInsuranceUrl: String = loadConfig(s"national-insurance.url")
+  override val paymentsUrl: String = loadConfig(s"payments.url")
 }

@@ -1,7 +1,30 @@
-@(appConfig: config.AppConfig, partial: Html)(implicit request: Request[_], messages: Messages))
+@import views.html.main_template
 
-@views.html.main_template(title = "Hello from trial-app-frontend", bodyClasses = None, appConfig = appConfig) {
-    <h1>Hello from trial-app-frontend !</h1>
+@(appConfig: config.AppConfig, partials: Seq[Html])(implicit request: Request[_], messages: Messages))
 
-    @partial
+@sidebar = {
+    <div class="side-nav [modifier class]">
+        <ul class="side-nav__component">
+            <li class="side-nav__list">
+                <a class="side-nav__link" href="#">Account Information</a>
+            </li>
+            <li class="side-nav__list side-nav__list--selected">
+                <span class="side-nav__link">Transactions</span>
+            </li>
+            <li class="side-nav__list">
+                <a class="side-nav__link" href="#">Problems with this website</a>
+            </li>
+        </ul>
+    </div>
+}
+
+@main_template(Messages("helloWorld.title"), appConfig = appConfig, sidebarLinks = Some(sidebar)) {
+
+    <h1 class="bold-xlarge">@Messages("helloWorld.title")</h1>
+
+    @partials.map { partial =>
+        <section class="section section--branded">
+            @partial
+        </section>
+    }
 }

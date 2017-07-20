@@ -3,4 +3,6 @@
 GET        /hello-world             controllers.HelloWorldController.helloWorld
 
 GET        /national-insurance      controllers.NationalInsuranceController.nationalInsurance
+GET        /payments                controllers.PaymentsController.payments
+
 
