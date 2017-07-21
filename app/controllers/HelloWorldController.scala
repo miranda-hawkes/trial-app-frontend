@@ -10,7 +10,7 @@ import scala.concurrent.Future
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.twirl.api.Html
 import uk.gov.hmrc.play.http.HttpGet
-import uk.gov.hmrc.play.partials.{CachedStaticHtmlPartialRetriever, HtmlPartial}
+import uk.gov.hmrc.play.partials.CachedStaticHtmlPartialRetriever
 
 @Singleton
 class HelloWorldController @Inject()(appConfig: AppConfig,

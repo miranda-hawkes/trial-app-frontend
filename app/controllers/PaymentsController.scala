@@ -26,6 +26,6 @@ import scala.concurrent.Future
 class PaymentsController @Inject()() extends FrontendController {
 
   val payments: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(views.html.payments()))
+    Future.successful(Ok(partials.html.payments()))
   }
 }

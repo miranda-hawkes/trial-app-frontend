@@ -26,6 +26,6 @@ import scala.concurrent.Future
 class NationalInsuranceController @Inject()() extends FrontendController {
 
   val nationalInsurance: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(views.html.nationalInsurance()))
+    Future.successful(Ok(partials.html.nationalInsurance()))
   }
 }
