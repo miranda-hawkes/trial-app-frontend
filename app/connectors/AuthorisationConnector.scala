@@ -26,21 +26,25 @@ import play.api.http.Status._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+sealed trait AuthResponse
+case class SuccessAuthResponse(response: AuthorisationDataModel) extends AuthResponse
+case class FailedAuthResponse(error: String) extends AuthResponse
+
 @Singleton
 class AuthorisationConnector @Inject()(http: WSHttp) extends ServicesConfig {
 
   lazy val serviceUrl: String = baseUrl("auth")
   val authorityUri: String = "auth/authority"
 
-  def getAuthResponse()(implicit hc: HeaderCarrier): Future[AuthorisationDataModel] = {
+  def getAuthResponse()(implicit hc: HeaderCarrier): Future[AuthResponse] = {
     val url = s"$serviceUrl/$authorityUri"
     http.GET[HttpResponse](url).map {
       response =>
         response.status match {
           case OK =>
-            response.json.as[AuthorisationDataModel]
+            SuccessAuthResponse(response.json.as[AuthorisationDataModel])
           case _ =>
-            throw new Exception("Error returned from auth service")
+            FailedAuthResponse(s"${response.status} returned from Auth with message: ${response.body}")
         }
     }
   }

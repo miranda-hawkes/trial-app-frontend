@@ -25,7 +25,8 @@ import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import org.mockito.Mockito.when
 import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.play.frontend.auth.connectors.domain.{ConfidenceLevel, CredentialStrength}
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.play.frontend.auth.connectors.domain.{Accounts, ConfidenceLevel, CredentialStrength, PayeAccount}
 
 import scala.concurrent.Future
 
@@ -61,44 +62,37 @@ class AuthorisationConnectorSpec extends UnitSpec with MockitoSugar with WithFak
       "credId" -> "000000000000000"
     )
 
-    "with a valid request" should {
+    "with a valid response" should {
 
       when(mockHttp.GET[HttpResponse](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse(OK, Some(authResponse))))
 
+      val model: AuthorisationDataModel = AuthorisationDataModel(
+        CredentialStrength.Strong,
+        "Individual",
+        ConfidenceLevel.L200,
+        "/auth/oid/57e915480f00000f006d915b",
+        Accounts(Some(PayeAccount("test", Nino("AA123456A")))))
+
       val result = await(target.getAuthResponse())
 
-      "return a model which" should {
+      "return a SuccessAuthResponse which" should {
 
-        "have a confidence level of 200" in {
-          result.confidenceLevel shouldBe ConfidenceLevel.L200
-        }
-
-        "have a credential strength of Strong" in {
-          result.credentialStrength shouldBe CredentialStrength.Strong
-        }
-
-        "have a uri of /auth/oid/57e915480f00000f006d915b" in {
-          result.uri shouldBe "/auth/oid/57e915480f00000f006d915b"
-        }
-
-        "have an Affinity Group of Individual" in {
-          result.affinityGroup shouldBe "Individual"
+        "contain an AuthorisationDataModel" in {
+          result shouldEqual SuccessAuthResponse(model)
         }
       }
     }
 
-    "with an invalid request" should {
+    "with an invalid response" should {
 
       when(mockHttp.GET[HttpResponse](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn(Future.successful(HttpResponse(BAD_REQUEST, None)))
+        .thenReturn(Future.successful(HttpResponse(BAD_REQUEST, responseString = Some("Error"))))
 
-      "throw an exception" in {
-        lazy val ex = intercept[Exception] {
-          await(target.getAuthResponse())
-        }
+      val result = await(target.getAuthResponse())
 
-        ex.getMessage shouldEqual "Error returned from auth service"
+      "return a FailedAuthResponse with 400 error and response body" in {
+        result shouldEqual FailedAuthResponse("400 returned from Auth with message: Error")
       }
     }
   }
