@@ -2,7 +2,7 @@
 
 GET        /hello-world             controllers.HelloWorldController.helloWorld(redirect: String)
 
-GET        /national-insurance      controllers.NationalInsuranceController.nationalInsurance
+GET        /national-insurance      controllers.NationalInsuranceController.nationalInsurance(errorCode: Int)
 GET        /payments                controllers.PaymentsController.payments
 
 

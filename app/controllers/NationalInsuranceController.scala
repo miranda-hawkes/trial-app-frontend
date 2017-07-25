@@ -20,12 +20,16 @@ import javax.inject.Inject
 
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.frontend.controller.FrontendController
-
 import scala.concurrent.Future
 
 class NationalInsuranceController @Inject()() extends FrontendController {
 
-  val nationalInsurance: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(partials.html.nationalInsurance()))
+  val nationalInsurance: Int => Action[AnyContent] = errorCode => Action.async {
+    implicit request => {
+      if(errorCode == 200)
+        Future.successful(Ok(partials.html.nationalInsurance()))
+      else
+        Future.successful(Status(errorCode))
+    }
   }
 }

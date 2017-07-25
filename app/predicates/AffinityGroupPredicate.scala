@@ -27,7 +27,7 @@ import scala.concurrent.Future
 class AffinityGroupPredicate(authorisationService: AuthorisationService) extends PageVisibilityPredicate {
 
   //TODO: change
-  private val errorAction = Future.successful(Redirect(controllers.routes.NationalInsuranceController.nationalInsurance().url))
+  private val errorAction = Future.successful(Redirect("http://www.gov.uk"))
 
   private val isOrganisation = (affinityGroup: String) => Future.successful(affinityGroup == "Organisation")
 
