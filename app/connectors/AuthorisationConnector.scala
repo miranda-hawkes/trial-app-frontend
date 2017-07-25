@@ -21,7 +21,7 @@ import javax.inject.{Inject, Singleton}
 import models.AuthorisationDataModel
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.http.ws.WSHttp
+import config.WSHttp
 import play.api.http.Status._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

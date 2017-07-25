@@ -1,6 +1,6 @@
 # microservice specific routes
 
-GET        /hello-world             controllers.HelloWorldController.helloWorld
+GET        /hello-world             controllers.HelloWorldController.helloWorld(redirect: String)
 
 GET        /national-insurance      controllers.NationalInsuranceController.nationalInsurance
 GET        /payments                controllers.PaymentsController.payments

@@ -16,11 +16,11 @@
 
 package connectors
 
+import config.WSHttp
 import models.AuthorisationDataModel
 import org.mockito.ArgumentMatchers
 import org.scalatest.mock.MockitoSugar
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.http.ws.WSHttp
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import org.mockito.Mockito.when
 import play.api.http.Status.{BAD_REQUEST, OK}

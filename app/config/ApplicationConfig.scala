@@ -11,6 +11,7 @@ trait AppConfig extends ServicesConfig {
   val reportAProblemNonJSUrl: String
   val nationalInsuranceUrl: String
   val paymentsUrl: String
+  val governmentGateway: String
 }
 
 @Singleton
@@ -28,4 +29,5 @@ class ApplicationConfig @Inject()(configuration: Configuration, val app: Applica
 
   override val nationalInsuranceUrl: String = loadConfig(s"national-insurance.url")
   override val paymentsUrl: String = loadConfig(s"payments.url")
+  override val governmentGateway: String = loadConfig(s"government-gateway-sign-in.host")
 }
