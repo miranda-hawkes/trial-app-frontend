@@ -1,6 +1,6 @@
 @import views.html.main_template
 
-@(appConfig: config.AppConfig, partials: Seq[Html])(implicit request: Request[_], messages: Messages)
+@(partials: Seq[Html])(implicit request: Request[_], messages: Messages, appConfig: config.AppConfig)
 
 @sidebar = {
     <div class="side-nav">
@@ -18,9 +18,9 @@
     </div>
 }
 
-@main_template(Messages("helloWorld.title"), appConfig = appConfig, sidebarLinks = Some(sidebar)) {
+@main_template(Messages("home.title"), appConfig = appConfig, sidebarLinks = Some(sidebar)) {
 
-    <h1 class="bold-xlarge">@Messages("helloWorld.title")</h1>
+    <h1 class="bold-xlarge">@Messages("home.title")</h1>
 
     @partials.map { partial =>
         <section class="section section--branded">

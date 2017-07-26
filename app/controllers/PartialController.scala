@@ -40,24 +40,24 @@ trait PartialController extends FrontendController with I18nSupport with HtmlPar
     )
   }
 
-  implicit val readPartialsForm: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
+  implicit val read: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
     def read(method: String, url: String, response: HttpResponse): HttpResponse = response
   }
 
-  def getPartial(url: String)(implicit hc: HeaderCarrier): Future[HtmlPartial] = {
-    wsHttp.GET[HttpResponse](url)(readPartialsForm, hc).map {
+  protected[controllers] def getPartial(url: String)(implicit hc: HeaderCarrier): Future[HtmlPartial] = {
+    wsHttp.GET[HttpResponse](url)(read, hc).map {
       response => read("GET", url, response)
     }
   }
 
-  def handlePartial(htmlPartial: HtmlPartial): Future[Html] = {
+  protected[controllers] def handlePartial(htmlPartial: HtmlPartial): Future[Html] = {
     htmlPartial match {
       case Success(_, content) => Future.successful(content)
       case Failure(Some(status), _) => Future.successful(handleFailure(status))
     }
   }
 
-  def handleFailure(status: Int): Html = {
+  protected[controllers] def handleFailure(status: Int): Html = {
     status match {
       case UNAUTHORIZED => errorText(s"$status You are not authorised to view this page")
       case INTERNAL_SERVER_ERROR => errorText(s"$status Please try again later.")

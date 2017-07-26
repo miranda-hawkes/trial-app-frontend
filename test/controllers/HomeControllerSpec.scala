@@ -16,32 +16,35 @@ import play.api.test.Helpers._
 import traits.ControllerTestSpec
 import uk.gov.hmrc.play.frontend.auth.AuthContext
 import uk.gov.hmrc.play.frontend.auth.connectors.domain.{Accounts, Authority, ConfidenceLevel, CredentialStrength}
+import uk.gov.hmrc.play.http.HttpResponse
 
-class HelloWorldControllerSpec extends ControllerTestSpec with MockitoSugar {
+import scala.concurrent.Future
 
+class HomeControllerSpec extends ControllerTestSpec with MockitoSugar {
+
+  val mockHttp: WSHttp = mock[WSHttp]
 
   def setupController(authContext: AuthContext,
-                      isAuthorised: Boolean): HelloWorldController = {
+                      isAuthorised: Boolean): HomeController = {
 
-    val mockHttp = mock[WSHttp]
     val mockAuthorisedActions: AuthorisedActions = mock[AuthorisedActions]
 
     if(isAuthorised)
-      when(mockAuthorisedActions.authorisedOrganisationAction(ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockAuthorisedActions.authorisedOrganisationAction(ArgumentMatchers.any()))
       .thenAnswer(new Answer[Action[AnyContent]] {
         override def answer(invocation: InvocationOnMock): Action[AnyContent] = {
-          val action = invocation.getArgument[AuthenticatedAction](1)
+          val action = invocation.getArgument[AuthenticatedAction](0)
           val organisation = Organisation(authContext)
           Action.async(action(organisation))
         }
       })
     else
-      when(mockAuthorisedActions.authorisedOrganisationAction(ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockAuthorisedActions.authorisedOrganisationAction(ArgumentMatchers.any()))
         .thenReturn(Action.async(Results.Redirect("unauthorised-route")))
 
-    new HelloWorldController(mockConfig, mockAuthorisedActions, mockHttp, messagesApi) {
-      override lazy val nationalInsuranceUrl: String = "http://www.gov.uk"
-      override lazy val paymentsUrl: String = "http://www.gov.uk"
+    new HomeController(mockAuthorisedActions, mockHttp, messagesApi, mockConfig) {
+      override lazy val nationalInsuranceUrl: String = ""
+      override lazy val paymentsUrl: String = ""
     }
   }
 
@@ -62,11 +65,35 @@ class HelloWorldControllerSpec extends ControllerTestSpec with MockitoSugar {
 
   lazy val fakeRequest = FakeRequest("GET", "/")
 
-  "HelloWorldController .helloWorld" when {
+  "HomeController .home" when {
 
-    "user is authorised" should {
+    "user is authorised and both partial retrievals are successful" should {
       val controller = setupController(authContext, isAuthorised = true)
-      lazy val result = controller.helloWorld("url")(fakeRequest)
+
+      when(mockHttp.GET[HttpResponse](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(HttpResponse(OK, responseString = Some("some body"))))
+        .thenReturn(Future.successful(HttpResponse(OK, responseString = Some("more body"))))
+
+      lazy val result = controller.home(fakeRequest)
+
+      "return 200" in {
+        status(result) shouldBe Status.OK
+      }
+
+      "return HTML" in {
+        contentType(result) shouldBe Some("text/html")
+        charset(result) shouldBe Some("utf-8")
+      }
+    }
+
+    "user is authorised and one partial retrieval is unsuccessful" should {
+      val controller = setupController(authContext, isAuthorised = true)
+
+      when(mockHttp.GET[HttpResponse](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(HttpResponse(OK, responseString = Some("some body"))))
+        .thenReturn(Future.successful(HttpResponse(UNAUTHORIZED, responseString = Some("you are unauthorised"))))
+
+      lazy val result = controller.home(fakeRequest)
 
       "return 200" in {
         status(result) shouldBe Status.OK
@@ -80,7 +107,7 @@ class HelloWorldControllerSpec extends ControllerTestSpec with MockitoSugar {
 
     "user is unauthorised" should {
       val controller = setupController(authContext, isAuthorised = false)
-      lazy val result = controller.helloWorld("url")(fakeRequest)
+      lazy val result = controller.home(fakeRequest)
 
       "return 303" in {
         status(result) shouldBe Status.SEE_OTHER
@@ -89,24 +116,6 @@ class HelloWorldControllerSpec extends ControllerTestSpec with MockitoSugar {
       "redirect to 'unauthorised-route'" in {
         redirectLocation(result) shouldBe Some("unauthorised-route")
       }
-    }
-  }
-
-  "HelloWorldController .retrieveNIPartial" should {
-    val controller = setupController(authContext, isAuthorised = true)
-    lazy val result = controller.retrieveNIPartial(fakeRequest)
-
-    "return some html" in {
-      contentType(result) shouldBe HTML
-    }
-  }
-
-  "HelloWorldController .retrievePaymentsPartial" should {
-    val controller = setupController(authContext, isAuthorised = true)
-    lazy val result = controller.retrievePaymentsPartial(fakeRequest)
-
-    "return some html" in {
-      contentType(result) shouldBe HTML
     }
   }
 }

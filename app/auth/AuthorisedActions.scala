@@ -33,9 +33,8 @@ class AuthorisedActions @Inject()(appConfig: ApplicationConfig,
 
   override val authConnector: FrontendAuthorisationConnector = frontendAuthorisationConnector
 
-  private def composeAction(redirect: Option[String]) = {
-    val redirectUrl: String = redirect match { case Some(url) => s"?redirect=$url" }
-    val postSignInRedirectUrl: String = controllers.routes.HelloWorldController.helloWorld(redirectUrl).url
+  private val composeAction: (AuthenticatedAction) => Action[AnyContent] = {
+    val postSignInRedirectUrl: String = controllers.routes.HomeController.home().url
     val ggProvider = new GovernmentGatewayProvider(postSignInRedirectUrl, appConfig.governmentGateway)
 
     val regime = new Regime {
@@ -56,8 +55,8 @@ class AuthorisedActions @Inject()(appConfig: ApplicationConfig,
     authenticationAction
   }
 
-  def authorisedOrganisationAction(redirect: Option[String] = None)(action: AuthenticatedAction): Action[AnyContent] =
-    composeAction(redirect)(action)
+  def authorisedOrganisationAction(action: AuthenticatedAction): Action[AnyContent] =
+    composeAction(action)
 
   trait Regime extends TaxRegime {
     override def isAuthorised(accounts: Accounts): Boolean = true
