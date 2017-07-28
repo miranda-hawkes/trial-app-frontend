@@ -17,7 +17,6 @@
 package connectors
 
 import javax.inject.{Inject, Singleton}
-
 import models.AuthorisationDataModel
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}

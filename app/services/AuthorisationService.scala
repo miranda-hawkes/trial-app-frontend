@@ -17,8 +17,11 @@
 package services
 
 import javax.inject.{Inject, Singleton}
+
 import connectors.{AuthorisationConnector, FailedAuthResponse, SuccessAuthResponse}
+import models.AuthorisationDataModel
 import uk.gov.hmrc.play.http.HeaderCarrier
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -28,6 +31,13 @@ class AuthorisationService @Inject()(authConnector: AuthorisationConnector) {
   def getAffinityGroup(implicit hc: HeaderCarrier): Future[Option[String]] ={
     authConnector.getAuthResponse().map {
       case SuccessAuthResponse(response) => Some(response.affinityGroup)
+      case FailedAuthResponse(_) => None
+    }
+  }
+
+  def getAuthority()(implicit hc: HeaderCarrier): Future[Option[AuthorisationDataModel]] = {
+    authConnector.getAuthResponse().map {
+      case SuccessAuthResponse(response) => Some(response)
       case FailedAuthResponse(_) => None
     }
   }

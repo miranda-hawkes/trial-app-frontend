@@ -17,15 +17,28 @@
 package controllers
 
 import javax.inject.Inject
-
-import play.api.mvc.{Action, AnyContent}
+import auth.AuthorisedActions
+import play.api.mvc.{Action, AnyContent, Result}
+import predicates.ConfidenceLevelCheck.confidenceLevelCheck
+import services.AuthorisationService
 import uk.gov.hmrc.play.frontend.controller.FrontendController
-
 import scala.concurrent.Future
 
-class PaymentsController @Inject()() extends FrontendController {
+class PaymentsController @Inject()(authorisedActions: AuthorisedActions,
+                                   authorisationService: AuthorisationService) extends FrontendController {
 
   val payments: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(partials.html.payments()))
+
+    println("******* HC authorisation: \n" + hc + "\n*****")
+    val response: Boolean => Future[Result] = isAuthorised => {
+      if(isAuthorised) Future.successful(Ok(partials.html.payments()))
+      else Future.successful(Unauthorized)
+    }
+
+    for {
+      authContext <- authorisationService.getAuthority()
+      isAuthorised <- confidenceLevelCheck(authContext)
+      route <- response(isAuthorised)
+    } yield route
   }
 }

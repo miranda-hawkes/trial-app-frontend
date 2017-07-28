@@ -18,14 +18,18 @@ package auth
 
 import javax.inject.Inject
 
-import config.{ApplicationConfig, FrontendAuthConnector}
+import config.ApplicationConfig
 import connectors.FrontendAuthorisationConnector
 import models.Organisation
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, Result}
 import predicates.VisibilityPredicate
+import predicates.ConfidenceLevelCheck._
 import uk.gov.hmrc.play.frontend.auth.{Actions, AuthContext, AuthenticationProvider, TaxRegime}
 import services.AuthorisationService
 import uk.gov.hmrc.play.frontend.auth.connectors.domain.Accounts
+import uk.gov.hmrc.play.http.HeaderCarrier
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class AuthorisedActions @Inject()(appConfig: ApplicationConfig,
                                   authorisationService: AuthorisationService,
@@ -33,7 +37,7 @@ class AuthorisedActions @Inject()(appConfig: ApplicationConfig,
 
   override val authConnector: FrontendAuthorisationConnector = frontendAuthorisationConnector
 
-  private val composeAction: (AuthenticatedAction) => Action[AnyContent] = {
+  private val composeAuthorisedOrganisationAction: (AuthenticatedAction) => Action[AnyContent] = {
     val postSignInRedirectUrl: String = controllers.routes.HomeController.home().url
     val ggProvider = new GovernmentGatewayProvider(postSignInRedirectUrl, appConfig.governmentGateway)
 
@@ -55,8 +59,9 @@ class AuthorisedActions @Inject()(appConfig: ApplicationConfig,
     authenticationAction
   }
 
-  def authorisedOrganisationAction(action: AuthenticatedAction): Action[AnyContent] =
-    composeAction(action)
+  def authorisedOrganisationAction(action: AuthenticatedAction): Action[AnyContent] = {
+    composeAuthorisedOrganisationAction(action)
+  }
 
   trait Regime extends TaxRegime {
     override def isAuthorised(accounts: Accounts): Boolean = true

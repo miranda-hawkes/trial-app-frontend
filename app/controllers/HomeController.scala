@@ -8,7 +8,7 @@ import uk.gov.hmrc.play.frontend.controller.FrontendController
 import play.api.mvc._
 import scala.concurrent.Future
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.twirl.api.Html
+import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
 class HomeController @Inject()(authorisedActions: AuthorisedActions,

@@ -4,8 +4,9 @@ import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import play.api.Play.current
 import play.api.i18n.Messages.Implicits._
-import play.api.mvc.Request
+import play.api.mvc._
 import play.api.{Application, Configuration, Play}
+import play.mvc.Http.HeaderNames
 import play.twirl.api.Html
 import uk.gov.hmrc.crypto.ApplicationCrypto
 import uk.gov.hmrc.play.audit.filters.FrontendAuditFilter
@@ -14,11 +15,14 @@ import uk.gov.hmrc.play.filters.MicroserviceFilterSupport
 import uk.gov.hmrc.play.frontend.bootstrap.DefaultFrontendGlobal
 import uk.gov.hmrc.play.http.logging.filters.FrontendLoggingFilter
 
-object FrontendGlobal extends DefaultFrontendGlobal {
+import scala.concurrent.Future
+
+object FrontendGlobal extends DefaultFrontendGlobal with RunMode {
 
   override val auditConnector = FrontendAuditConnector
   override val loggingFilter = LoggingFilter
   override val frontendAuditFilter = AuditFilter
+  override def filters: Seq[EssentialFilter] = frontendFilters :+ CorsFilter
 
   override def onStart(app: Application) {
     super.onStart(app)
@@ -48,4 +52,21 @@ object AuditFilter extends FrontendAuditFilter with RunMode with AppName with Mi
   override lazy val auditConnector = FrontendAuditConnector
 
   override def controllerNeedsAuditing(controllerName: String): Boolean = ControllerConfiguration.paramsForController(controllerName).needsAuditing
+}
+
+object CorsFilter extends Filter with MicroserviceFilterSupport {
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  def apply(nextFilter: (RequestHeader) => Future[Result])(requestHeader: RequestHeader): Future[Result] = {
+
+    nextFilter(requestHeader).map { result =>
+      val exposedHeaders: String = "Location, Origin, X-Requested-With, Content-Type, Accept, Referer, User-Agent"
+      result.withHeaders(HeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN -> "*",
+        HeaderNames.ALLOW -> "*",
+        HeaderNames.ACCESS_CONTROL_ALLOW_METHODS -> "POST, GET, PUT, DELETE, OPTIONS",
+        HeaderNames.ACCESS_CONTROL_ALLOW_HEADERS -> exposedHeaders,
+        HeaderNames.ACCESS_CONTROL_EXPOSE_HEADERS -> exposedHeaders
+      )
+    }
+  }
 }

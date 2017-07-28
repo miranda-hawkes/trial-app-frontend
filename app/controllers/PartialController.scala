@@ -17,21 +17,34 @@
 package controllers
 
 import config.WSHttp
-import play.api.i18n.I18nSupport
 import play.twirl.api.Html
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import play.api.http.Status._
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpReads, HttpResponse}
-import uk.gov.hmrc.play.partials.HtmlPartial
+import uk.gov.hmrc.play.partials.{HeaderCarrierForPartialsConverter, HtmlPartial}
 import uk.gov.hmrc.play.partials.HtmlPartial.{Failure, HtmlPartialHttpReads, Success}
 import partials.html.errorText
+import play.api.mvc.{Request, RequestHeader}
+import uk.gov.hmrc.play.frontend.filters.SessionCookieCryptoFilter
+
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait PartialController extends FrontendController with I18nSupport with HtmlPartialHttpReads {
+trait PartialController extends HtmlPartialHttpReads with HeaderCarrierForPartialsConverter {
 
   val urls: Seq[String]
   val wsHttp: WSHttp
+  override def crypto: (String) => String = SessionCookieCryptoFilter.encrypt
 
-  def getPartials(implicit hc: HeaderCarrier): Seq[Future[Html]] = {
+  private def partialsHeaderCarrier(implicit request: Request[_]): HeaderCarrier ={
+    val hc = headerCarrierEncryptingSessionCookieFromRequest(request)
+    hc.toHeaderCarrier.withExtraHeaders("Csrf-Token" -> "nocheck") //needed for POST requests only
+  }
+
+  implicit val read: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
+    def read(method: String, url: String, response: HttpResponse): HttpResponse = response
+  }
+
+  def getPartials(implicit request: Request[_]): Seq[Future[Html]] = {
     urls.map(url =>
       for {
         response <- getPartial(url)
@@ -40,13 +53,10 @@ trait PartialController extends FrontendController with I18nSupport with HtmlPar
     )
   }
 
-  implicit val read: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-    def read(method: String, url: String, response: HttpResponse): HttpResponse = response
-  }
-
-  protected[controllers] def getPartial(url: String)(implicit hc: HeaderCarrier): Future[HtmlPartial] = {
-    wsHttp.GET[HttpResponse](url)(read, hc).map {
-      response => read("GET", url, response)
+  protected[controllers] def getPartial(url: String)(implicit request: Request[_]): Future[HtmlPartial] = {
+    wsHttp.GET[HttpResponse](url)(read, partialsHeaderCarrier).map {
+      response =>
+        read("GET", url, response)
     }
   }
 
@@ -57,11 +67,12 @@ trait PartialController extends FrontendController with I18nSupport with HtmlPar
     }
   }
 
+  /* some examples */
   protected[controllers] def handleFailure(status: Int): Html = {
     status match {
       case UNAUTHORIZED => errorText(s"$status You are not authorised to view this page")
       case INTERNAL_SERVER_ERROR => errorText(s"$status Please try again later.")
-      case _ => errorText(s"$status An unknown error has occured")
+      case _ => errorText(s"$status An unknown error has occurred")
     }
   }
 }
