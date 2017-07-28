@@ -19,11 +19,12 @@ package controllers
 import config.WSHttp
 import play.twirl.api.Html
 import play.api.http.Status._
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpReads, HttpResponse}
-import uk.gov.hmrc.play.partials.{HeaderCarrierForPartialsConverter, HtmlPartial}
+import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpReads, HttpResponse}
+import uk.gov.hmrc.play.partials.{FormPartialRetriever, HeaderCarrierForPartialsConverter, HtmlPartial}
 import uk.gov.hmrc.play.partials.HtmlPartial.{Failure, HtmlPartialHttpReads, Success}
 import partials.html.errorText
-import play.api.mvc.{Request, RequestHeader}
+import play.api.http.HeaderNames._
+import play.api.mvc.{AnyContent, Request, RequestHeader}
 import uk.gov.hmrc.play.frontend.filters.SessionCookieCryptoFilter
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -54,8 +55,9 @@ trait PartialController extends HtmlPartialHttpReads with HeaderCarrierForPartia
   }
 
   protected[controllers] def getPartial(url: String)(implicit request: Request[_]): Future[HtmlPartial] = {
-    wsHttp.GET[HttpResponse](url)(read, partialsHeaderCarrier).map {
+    wsHttp.GET[HttpResponse](urlWithCsrfToken(url)(request))(read, partialsHeaderCarrier).map {
       response =>
+        println("\n *****" + urlWithCsrfToken(url) + " \n******")
         read("GET", url, response)
     }
   }
@@ -67,12 +69,21 @@ trait PartialController extends HtmlPartialHttpReads with HeaderCarrierForPartia
     }
   }
 
-  /* some examples */
+  /* some examples of potential error handling */
   protected[controllers] def handleFailure(status: Int): Html = {
     status match {
-      case UNAUTHORIZED => errorText(s"$status You are not authorised to view this page")
+      case UNAUTHORIZED => errorText(s"$status Error: Confidence level not 200")
       case INTERNAL_SERVER_ERROR => errorText(s"$status Please try again later.")
       case _ => errorText(s"$status An unknown error has occurred")
     }
+  }
+
+  def urlWithCsrfToken(url: String)(implicit request: RequestHeader): String =
+      s"$url&csrfToken=$getCsrfToken"
+
+  protected def getCsrfToken(implicit request: RequestHeader): String = {
+    import play.filters.csrf.CSRF
+
+    CSRF.getToken(request).map{ _.value }.getOrElse("")
   }
 }

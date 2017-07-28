@@ -1,3 +1,8 @@
+@import uk.gov.hmrc.play.views.html.helpers._
+@import forms.TransactionForm._
+
+@(csrfToken: String, submitUrl: String)(implicit request: Request[_], messages: Messages)
+
 <h2>This is the payments partial</h2>
 
 <table>
@@ -18,3 +23,28 @@
         </tr>
     </tbody>
 </table>
+
+<form id="select-transaction" action="@submitUrl" method="POST">
+
+    <input type="hidden" name="csrfToken" value="@csrfToken"/>
+
+    <fieldset class="form-field-group">
+
+        @inputRadioGroup(
+            transactionForm("id"),
+            Seq("1" -> "1",
+                "2" -> "2"),
+            '_legend -> "Select",
+            '_legendClass -> "visuallyhidden",
+            '_labelAfter -> true,
+            '_labelClass -> "block-label"
+        )
+
+    </fieldset>
+
+    <div class="form-field">
+        <button class="button" type="submit">Select</button>
+    </div>
+
+</form>
+

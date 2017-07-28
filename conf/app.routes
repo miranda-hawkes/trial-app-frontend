@@ -1,8 +1,10 @@
 # microservice specific routes
 
 GET        /home                    controllers.HomeController.home
+POST       /home                    controllers.HomeController.submitPayments
 
 GET        /national-insurance      controllers.NationalInsuranceController.nationalInsurance(errorCode: Int)
-GET        /payments                controllers.PaymentsController.payments
 
+GET        /payments                controllers.PaymentsController.payments(submitUrl: String, csrfToken: String)
+POST       /payments                controllers.PaymentsController.submit
 

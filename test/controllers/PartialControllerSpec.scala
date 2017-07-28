@@ -62,8 +62,8 @@ class PartialControllerSpec extends UnitSpec with MockitoSugar {
         result.contentType shouldBe "text/html"
       }
 
-      "have the text '401 You are not authorised to view this page'" in {
-        result.body should include("401 You are not authorised to view this page")
+      "have the text '401 Error: Confidence level not 200'" in {
+        result.body should include("401 Error: Confidence level not 200")
       }
     }
 
