@@ -26,7 +26,6 @@ object ConfidenceLevelCheck {
   def confidenceLevelCheck(authModel: Option[AuthorisationDataModel]): Future[Boolean] =
     authModel match {
       case Some(model) => model.confidenceLevel match {
-        case ConfidenceLevel.L200 => Future.successful(true)
         case ConfidenceLevel.L300 => Future.successful(true)
         case ConfidenceLevel.L500 => Future.successful(true)
         case _ => Future.successful(false)

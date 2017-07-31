@@ -1,0 +1,26 @@
+@(url: String, id: Int)(implicit request: Request[_], messages: Messages)
+
+<h2>Payments</h2>
+<h3>Transaction No. @id</h3>
+<table>
+    <tbody>
+        <tr>
+            <td>Date</td>
+            <td>14 August 2017</td>
+        </tr>
+        <tr>
+            <td>Time</td>
+            <td>14:09</td>
+        </tr>
+        <tr>
+            <td>Location</td>
+            <td>Telford</td>
+        </tr>
+    </tbody>
+</table>
+
+
+<a href="@url" class="button">Back to home</a>
+
+
+

@@ -24,9 +24,8 @@ object TransactionForm {
 
   val transactionForm = Form(
     mapping(
-      "id" -> number,
-      "csrfToken" -> text
-    )(TransactionModel.apply)((transactionModel: TransactionModel) => Some(transactionModel.id, transactionModel.csrfToken))
+      "id" -> number)
+    (TransactionModel.apply)((transactionModel: TransactionModel) => Some(transactionModel.id))
   )
 }
 

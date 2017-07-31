@@ -6,5 +6,9 @@ POST       /home                    controllers.HomeController.submitPayments
 GET        /national-insurance      controllers.NationalInsuranceController.nationalInsurance(errorCode: Int)
 
 GET        /payments                controllers.PaymentsController.payments(submitUrl: String, csrfToken: String)
-POST       /payments                controllers.PaymentsController.submit
+POST       /payments                controllers.PaymentsController.submit(submitUrl: String)
+
+GET        /error-affinity-group    controllers.ErrorPageController.affinityGroup(affinityGroup: String)
+GET        /error-no-affinity-group controllers.ErrorPageController.noAffinityGroup
+
 

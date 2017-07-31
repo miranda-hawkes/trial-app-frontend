@@ -26,21 +26,24 @@ import scala.concurrent.Future
 
 class AffinityGroupPredicate(authorisationService: AuthorisationService) extends PageVisibilityPredicate {
 
-  //TODO: change
-  private val errorAction = Future.successful(Redirect("http://www.gov.uk"))
+  private val errorAffinityGroupAction = (affinityGroup: String) =>
+    Future.successful(Redirect(controllers.routes.ErrorPageController.affinityGroup(affinityGroup).url))
+
+  private val errorNoAffinityGroupAction =
+    Future.successful(Redirect(controllers.routes.ErrorPageController.noAffinityGroup().url))
 
   private val isOrganisation = (affinityGroup: String) => Future.successful(affinityGroup == "Organisation")
 
   private def checkAffinityGroup(affinityGroup: String): Future[PageVisibilityResult] = {
     isOrganisation(affinityGroup).map { check =>
       if(check) PageIsVisible
-      else PageBlocked(errorAction)
+      else PageBlocked(errorAffinityGroupAction(affinityGroup))
     }
   }
 
   private def routeRequest(affinityGroup: Option[String]): Future[PageVisibilityResult] = affinityGroup match {
     case Some(data) => checkAffinityGroup(data)
-    case _ => Future.successful(PageBlocked(errorAction))
+    case _ => Future.successful(PageBlocked(errorNoAffinityGroupAction))
   }
 
   override def apply(authContext: AuthContext, request: Request[AnyContent]): Future[PageVisibilityResult] = {

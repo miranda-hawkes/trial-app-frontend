@@ -1,1 +1,10 @@
-home.title = Partials
+home.title = Summary
+
+errorConfidenceLevel.title = You are not authorised to view this content
+errorConfidenceLevel.helpOne = You must have a Confidence Level of 300 or more to view the {0} service.
+
+errorAffinityGroup.title = You are signed in as a {0}
+errorAffinityGroup.help = Please log in as an Organisation to access this service
+
+errorNoAffinityGroup.title = Please log in as an Organisation to access this service
+

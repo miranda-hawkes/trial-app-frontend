@@ -3,7 +3,7 @@
 
 @(csrfToken: String, submitUrl: String)(implicit request: Request[_], messages: Messages)
 
-<h2>This is the payments partial</h2>
+<h2>Payments Service</h2>
 
 <table>
     <thead>
@@ -15,11 +15,11 @@
     <tbody>
         <tr>
             <td>1</td>
-            <td>£1</td>
+            <td>£100</td>
         </tr>
         <tr>
             <td>2</td>
-            <td>£1</td>
+            <td>£100</td>
         </tr>
     </tbody>
 </table>
@@ -30,21 +30,33 @@
 
     <fieldset class="form-field-group">
 
-        @inputRadioGroup(
-            transactionForm("id"),
-            Seq("1" -> "1",
-                "2" -> "2"),
-            '_legend -> "Select",
-            '_legendClass -> "visuallyhidden",
-            '_labelAfter -> true,
-            '_labelClass -> "block-label"
-        )
+        <details role="group">
+            <summary role="button" aria-controls="details-content-0">
+                <span class="summary">Payments Service Actions</span>
+            </summary>
+
+            <div class="panel-indent panel-indent--wide panel-indent--gutter">
+                <p class="font-bold">Select a Transaction ID to view detailed information:</p>
+
+                @inputRadioGroup(
+                    transactionForm("id"),
+                    Seq("1" -> "1",
+                        "2" -> "2"),
+                    '_legend -> "Select",
+                    '_legendClass -> "visuallyhidden",
+                    '_labelAfter -> true,
+                    '_labelClass -> "block-label",
+                    '_groupClass -> "inline form-group radio-list"
+                )
+
+                <div class="form-field">
+                    <button class="button" type="submit">Select</button>
+                </div>
+
+            </div>
+        </details>
 
     </fieldset>
-
-    <div class="form-field">
-        <button class="button" type="submit">Select</button>
-    </div>
 
 </form>
 

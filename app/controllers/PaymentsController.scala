@@ -17,19 +17,22 @@
 package controllers
 
 import javax.inject.Inject
+
 import auth.AuthorisedActions
+import forms.TransactionForm
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Result}
 import predicates.ConfidenceLevelCheck.confidenceLevelCheck
 import services.AuthorisationService
 import uk.gov.hmrc.play.frontend.controller.FrontendController
+
 import scala.concurrent.Future
 
 class PaymentsController @Inject()(authorisedActions: AuthorisedActions,
                                    authorisationService: AuthorisationService,
                                    val messagesApi: MessagesApi) extends FrontendController with I18nSupport {
 
-  def payments(submitUrl: String, csrfToken: String) : Action[AnyContent] = Action.async { implicit request =>
+  def payments(submitUrl: String, csrfToken: String): Action[AnyContent] = Action.async { implicit request =>
 
     val response: Boolean => Future[Result] = isAuthorised => {
       if(isAuthorised) Future.successful(Ok(partials.html.payments(csrfToken, submitUrl)))
@@ -43,7 +46,25 @@ class PaymentsController @Inject()(authorisedActions: AuthorisedActions,
     } yield route
   }
 
-  val submit: Action[AnyContent] = Action.async {
-    Future.successful(Ok)
+  def submit(submitUrl: String): Action[AnyContent] = Action.async {
+    implicit request =>
+
+      val response: Boolean => Future[Result] = isAuthorised => {
+        if(isAuthorised) {
+          TransactionForm.transactionForm.bindFromRequest().fold(
+            error => Future.successful(BadRequest),
+            data => {
+              Future.successful(Ok(partials.html.paymentDetails(submitUrl, data.id)))
+            }
+          )
+        }
+        else Future.successful(Unauthorized)
+      }
+
+      for {
+        authContext <- authorisationService.getAuthority()
+        isAuthorised <- confidenceLevelCheck(authContext)
+        route <- response(isAuthorised)
+      } yield route
   }
 }

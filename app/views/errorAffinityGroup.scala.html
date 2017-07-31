@@ -1,0 +1,9 @@
+@import views.html.main_template
+
+@(affinityGroup: String)(implicit request: Request[_], messages: Messages, appConfig: config.AppConfig)
+
+@main_template(Messages("errorAffinityGroup.title", affinityGroup), appConfig = appConfig) {
+
+    <h1 class="bold-xlarge">@Messages("errorAffinityGroup.title", affinityGroup)</h1>
+    <p>@Messages("errorAffinityGroup.help")</p>
+}

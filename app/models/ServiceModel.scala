@@ -16,16 +16,4 @@
 
 package models
 
-import forms.TransactionForm
-import play.api.data.Form
-import play.api.mvc.{AnyContent, Request}
-
-case class TransactionModel(id: Int)
-
-object TransactionModel {
-  def emptyForm(implicit request: Request[AnyContent]): Form[TransactionModel] = {
-    TransactionForm.transactionForm.fill(
-      TransactionModel(1)
-    )
-  }
-}
+case class ServiceModel(serviceName: String, url: String)
