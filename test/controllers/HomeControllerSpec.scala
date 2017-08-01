@@ -9,20 +9,23 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
-import play.api.http.Status
+import play.api.http.{HeaderNames, Status}
 import play.api.mvc.{Action, AnyContent, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import play.twirl.api.Html
+import services.PartialsService
 import traits.ControllerTestSpec
 import uk.gov.hmrc.play.frontend.auth.AuthContext
 import uk.gov.hmrc.play.frontend.auth.connectors.domain.{Accounts, Authority, ConfidenceLevel, CredentialStrength}
-import uk.gov.hmrc.play.http.HttpResponse
+import uk.gov.hmrc.play.http.{HttpResponse, SessionKeys}
 
 import scala.concurrent.Future
 
 class HomeControllerSpec extends ControllerTestSpec with MockitoSugar {
 
   val mockHttp: WSHttp = mock[WSHttp]
+  val mockService: PartialsService = mock[PartialsService]
 
   def setupController(authContext: AuthContext,
                       isAuthorised: Boolean): HomeController = {
@@ -42,7 +45,7 @@ class HomeControllerSpec extends ControllerTestSpec with MockitoSugar {
       when(mockAuthorisedActions.authorisedOrganisationAction(ArgumentMatchers.any()))
         .thenReturn(Action.async(Results.Redirect("unauthorised-route")))
 
-    new HomeController(mockAuthorisedActions, mockHttp, messagesApi, mockConfig) {
+    new HomeController(mockAuthorisedActions, mockHttp, mockService, messagesApi, mockConfig) {
       override lazy val nationalInsuranceUrl: String = ""
       override lazy val paymentsUrl: String = ""
     }
@@ -67,14 +70,13 @@ class HomeControllerSpec extends ControllerTestSpec with MockitoSugar {
 
   "HomeController .home" when {
 
-    "user is authorised and both partial retrievals are successful" should {
+    "user is authorised and has a valid referer in session" should {
       val controller = setupController(authContext, isAuthorised = true)
 
-      when(mockHttp.GET[HttpResponse](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn(Future.successful(HttpResponse(OK, responseString = Some("some body"))))
-        .thenReturn(Future.successful(HttpResponse(OK, responseString = Some("more body"))))
+      when(mockService.getPartials(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Seq(Future.successful(Html(""))))
 
-      lazy val result = controller.home(fakeRequest)
+      lazy val result = controller.home(fakeRequest.withHeaders((HeaderNames.REFERER, "")))
 
       "return 200" in {
         status(result) shouldBe Status.OK
@@ -86,12 +88,11 @@ class HomeControllerSpec extends ControllerTestSpec with MockitoSugar {
       }
     }
 
-    "user is authorised and one partial retrieval is unsuccessful" should {
+    "user is authorised and has no referer in session" should {
       val controller = setupController(authContext, isAuthorised = true)
 
-      when(mockHttp.GET[HttpResponse](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn(Future.successful(HttpResponse(OK, responseString = Some("some body"))))
-        .thenReturn(Future.successful(HttpResponse(UNAUTHORIZED, responseString = Some("you are unauthorised"))))
+      when(mockService.getPartials(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Seq(Future.successful(Html(""))))
 
       lazy val result = controller.home(fakeRequest)
 
